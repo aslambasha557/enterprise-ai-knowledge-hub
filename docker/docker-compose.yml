@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # Vector Database: Qdrant
+  # ==========================================
+  qdrant:
+    image: qdrant/qdrant:v1.9.2
+    container_name: enterprise_knowledge_qdrant
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ai_internal_network
+
+  # ==========================================
+  # Local LLM & Embedding Engine: Ollama
+  # ==========================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: enterprise_knowledge_ollama
+    restart: unless-stopped
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_storage:/root/.ollama
+    networks:
+      - ai_internal_network
+
+  # ==========================================
+  # Workflow Automation Engine: n8n
+  # ==========================================
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: enterprise_knowledge_n8n
+    restart: unless-stopped
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    environment:
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://${N8N_HOST:-localhost}:5678/
+      - GENERIC_TIMEZONE=${TIMEZONE:-UTC}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    networks:
+      - ai_internal_network
+
+networks:
+  ai_internal_network:
+    driver: bridge
+
+volumes:
+  qdrant_storage:
+    driver: local
+  ollama_storage:
+    driver: local
+  n8n_data:
+    driver: local
