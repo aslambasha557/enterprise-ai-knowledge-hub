@@ -109,3 +109,20 @@ Step 4: Configure n8n CredentialsOpen n8n in your browser at http://localhost:56
     "file_path": "/infrastructure/network/"
   }'
 2. Verify Vector Store RetrievalQuery your knowledge base through the interactive chat UI or Chat Trigger endpoint in n8n:Query Example: "What is the IP address and BGP AS number for Core Router R-01?"Expected Result: Clear, plain-text response citing 10.200.1.1 and AS 65001.🔧 Troubleshooting Common IssuesProblemCauseResolutionn8n cannot connect to OllamaUsing http://localhost:11434 inside DockerChange host URL in n8n credentials to http://ollama:11434Qdrant Connection FailedNetwork isolation issueEnsure all containers share rag-network in docker-compose.ymlOllama Out of Memory (OOM)Insufficient host RAM for llama3.1Allocate swap space or switch to llama3.2:1b for lower resource usage
+
+
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+
+---
+
+### Commands to Push This to GitHub:
+
+Open your terminal in your repository folder and run:
+
+```bash
+# Create and write SETUP.md or update repository files
+git add SETUP.md docker/ workflows/ README.md
+git commit -m "docs: add complete technical setup and deployment guide"
+git push origin main
